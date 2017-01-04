@@ -159,6 +159,9 @@ func main() {
 			if err = updateDNS(r53Api, zoneID, rrs); err != nil {
 				glog.Warning(err)
 				continue
+			// If no error and it was dryRun then log info about this
+			} else if dryRun {
+				glog.Infof("DRY RUN: We normally would have updated %s to point %s to %s (%s)", zoneID, domain, hn, elbZoneID)
 			}
 
 			glog.Infof("Created dns record set: domain=%s, zoneID=%s", domain, zoneID)
@@ -404,8 +407,8 @@ func updateDNS(r53Api *route53.Route53, zoneID string, rrs route53.ResourceRecor
 		ChangeBatch:  &batch,
 		HostedZoneId: &zoneID,
 	}
+
 	if dryRun {
-		glog.Infof("DRY RUN: We normally would have updated %s to point to %s (%s)", zoneID)
 		return nil
 	}
 
