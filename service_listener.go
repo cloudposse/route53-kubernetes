@@ -21,6 +21,7 @@ import (
 	"k8s.io/kubernetes/pkg/client/transport"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/labels"
+	"strconv"
 )
 
 // Don't actually commit the changes to route53 records, just print out what we would have done.
@@ -32,8 +33,9 @@ const (
 )
 
 type rule struct {
-	service       *api.Service
-	dnsRecordType string
+	service       	*api.Service
+	dnsRecordType 	string
+	ttl 		int
 }
 
 func init() {
@@ -152,8 +154,8 @@ func main() {
 
 			var rrs route53.ResourceRecordSet
 			switch s.dnsRecordType {
-			case A: rrs = makeATypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."))
-			case CNAME: rrs = makeCNAMETypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."))
+			case A: rrs = makeATypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."), s.ttl)
+			case CNAME: rrs = makeCNAMETypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."), s.ttl)
 			}
 
 			if err = updateDNS(r53Api, zoneID, rrs); err != nil {
@@ -193,11 +195,19 @@ func getServiceBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 			dnsRecordType = defaultDNSRecordType()
 		}
 
+		ttl := defaultDNSRecordTTL()
+
+		ttlString, ok := service.ObjectMeta.Annotations["dnsRecordTTL"]
+		if ok && parseTTL(ttlString) != 0  {
+			ttl = parseTTL(ttlString)
+		}
+
+
 		annotation, ok := service.ObjectMeta.Annotations["domainName"]
 		if ok {
 			domains := strings.Split(annotation, ",")
 			for _, domain := range domains {
-				result[domain] = rule { service: &service, dnsRecordType: dnsRecordType }
+				result[domain] = rule { service: &service, dnsRecordType: dnsRecordType, ttl: ttl }
 			}
 		} else {
 			glog.Warningf("Domain name not set for %s", service.Name)
@@ -228,12 +238,19 @@ func getIngressBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 			dnsRecordType = defaultDNSRecordType()
 		}
 
+		ttl := defaultDNSRecordTTL()
+
+		ttlString, ok := service.ObjectMeta.Annotations["dnsRecordTTL"]
+		if ok && parseTTL(ttlString) != 0  {
+			ttl = parseTTL(ttlString)
+		}
+
 		// ingress
 		annotation, ok := ingress.ObjectMeta.Annotations["domainName"]
 		if ok {
 			domains := strings.Split(annotation, ",")
 			for _, domain := range domains {
-				result[domain] = rule{ service: service, dnsRecordType: dnsRecordType }
+				result[domain] = rule{ service: service, dnsRecordType: dnsRecordType, ttl: ttl }
 			}
 		} else {
 			glog.Warningf("Domain name not set for %s", ingress.Name)
@@ -250,8 +267,27 @@ func defaultDNSRecordType() string {
 	return dnsRecordType
 }
 
+func defaultDNSRecordTTL() int {
+	ttl := parseTTL(os.Getenv("DNS_RECORD_TTL"))
+	if ttl == 0  {
+		ttl = 300
+	}
+	return ttl
+}
+
 func isDNSRecordTypeValid(dnsRecordType string) bool {
 	return dnsRecordType == A || dnsRecordType == CNAME
+}
+
+
+func parseTTL(ttl string) int {
+	result, err := strconv.Atoi(ttl)
+	if err != nil {
+		return 0
+	} else if result <= 0 {
+		return 0
+	}
+	return result
 }
 
 func getIngressService(c *client.Client)*api.Service {
@@ -419,7 +455,7 @@ func updateDNS(r53Api *route53.Route53, zoneID string, rrs route53.ResourceRecor
 	return nil
 }
 
-func makeATypeRecordSet(hn, hzID, domain string) route53.ResourceRecordSet {
+func makeATypeRecordSet(hn, hzID, domain string, ttl int) route53.ResourceRecordSet {
 	at := route53.AliasTarget{
 		DNSName:              &hn,
 		EvaluateTargetHealth: aws.Bool(false),
@@ -429,10 +465,11 @@ func makeATypeRecordSet(hn, hzID, domain string) route53.ResourceRecordSet {
 		AliasTarget: &at,
 		Name:        &domain,
 		Type:        aws.String("A"),
+		TTL:   	     aws.Int64(ttl),
 	}
 }
 
-func makeCNAMETypeRecordSet(hn, hzID, domain string) route53.ResourceRecordSet {
+func makeCNAMETypeRecordSet(hn, hzID, domain string, ttl int) route53.ResourceRecordSet {
 	return route53.ResourceRecordSet{
 		ResourceRecords: []*route53.ResourceRecord{
 			&route53.ResourceRecord{
@@ -441,6 +478,6 @@ func makeCNAMETypeRecordSet(hn, hzID, domain string) route53.ResourceRecordSet {
 		},
 		Name:  &domain,
 		Type:  aws.String("CNAME"),
-		TTL:   aws.Int64(300),
+		TTL:   aws.Int64(ttl),
 	}
 }

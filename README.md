@@ -40,6 +40,8 @@ spec:
               value: ingress=endpoint
             - name: DNS_RECORD_TYPE
               value: CNAME
+            - name: DNS_RECORD_TTL
+              value: 300
 ```
 
 This service expects that it's running on a Kubernetes node on AWS and that the IAM profile for
@@ -72,7 +74,7 @@ that node is set up to allow the following, along with the default permissions n
 
 Service support ingress k8s resources.
 Because nginx ingress controller create on service for all ingress resources
-we use selector (configurable with ``INGRESS_SERVICE_SELECTOR`` environment variables)
+we use selector (configurable with ``INGRESS_SERVICE_SELECTOR`` environment variable)
 to find valid k8s service.
 
 **Default selector**: ``ingress=endpoint``
@@ -81,8 +83,15 @@ to find valid k8s service.
 
 Service support "A" and "CNAME" record types.
 By default service create "A" record for each domain record.
-To specify default record type use ``DNS_RECORD_TYPE`` environment variables.
+To specify default record type use ``DNS_RECORD_TYPE`` environment variable.
 Each k8s service \ ingress can override dns record type by annotation.
+
+#### DNS resource TTL
+
+Service support TTL (in seconds) configuration for dns records.
+Default value is `300` seconds.
+Default value can be overridden with ``DNS_RECORD_TTL`` environment variable.
+You can use annotation ``dnsRecordType`` to provide service \ ingress  specific ttl value.
 
 ### Service Configuration
 
@@ -100,6 +109,7 @@ metadata:
   annotations:
     domainName: "test.mydomain.com"
     dnsRecordType: "CNAME"
+    dnsRecordTTL: 600
 spec:
   selector:
     app: my-app
@@ -120,7 +130,7 @@ An "CNAME" record for `test.mydomain.com` will be created points to the ELB that
 configured by kubernetes. This assumes that a hosted zone exists in Route53 for mydomain.com.
 Any record that previously existed for that dns record will be updated.
 
-``dnsRecordType`` annotation is optional.
+``dnsRecordType`` and ``dnsRecordTTL`` annotations are optional.
 
 ### Ingress Configuration
 
@@ -136,6 +146,7 @@ metadata:
   annotations:
     domainName: "test.mydomain.com"
     dnsRecordType: "A"
+    dnsRecordTTL: 300
 spec:
   backend:
     serviceName: testsvc
@@ -146,7 +157,7 @@ An "A" record for `test.mydomain.com` will be created as an alias to the ELB tha
 ingress controller service by kubernetes. This assumes that a hosted zone exists in Route53 for mydomain.com.
 Any record that previously existed for that dns record will be updated.
 
-``dnsRecordType`` annotation is optional.
+``dnsRecordType`` and ``dnsRecordTTL`` annotations are optional.
 
 ### Alternative setup
 
