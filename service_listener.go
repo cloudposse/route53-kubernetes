@@ -260,7 +260,7 @@ func getIngressService(c *client.Client)*api.Service {
 		selector = "ingress=endpoint"
 	}
 
-	glog.Infof("User selector %v to find service for ingress", selector)
+	glog.Infof("Using selector %v to find service for ingress", selector)
 
 	l, err := labels.Parse(selector)
 	if err != nil {
@@ -273,7 +273,7 @@ func getIngressService(c *client.Client)*api.Service {
 
 	services, err := c.Services(api.NamespaceAll).List(serviceListOptions)
 	if err != nil || len(services.Items) == 0 {
-		glog.Fatalf("Failed to list services that used for ingress: %v", err)
+		glog.Fatalf("Failed to list services that use ingress: %v", err)
 		return nil
 	}
 
