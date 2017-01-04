@@ -35,7 +35,7 @@ const (
 type rule struct {
 	service       	*api.Service
 	dnsRecordType 	string
-	ttl 		int
+	ttl 		int64
 }
 
 func init() {
@@ -267,7 +267,7 @@ func defaultDNSRecordType() string {
 	return dnsRecordType
 }
 
-func defaultDNSRecordTTL() int {
+func defaultDNSRecordTTL() int64 {
 	ttl := parseTTL(os.Getenv("DNS_RECORD_TTL"))
 	if ttl == 0  {
 		ttl = 300
@@ -280,14 +280,14 @@ func isDNSRecordTypeValid(dnsRecordType string) bool {
 }
 
 
-func parseTTL(ttl string) int {
+func parseTTL(ttl string) int64 {
 	result, err := strconv.Atoi(ttl)
 	if err != nil {
 		return 0
 	} else if result <= 0 {
 		return 0
 	}
-	return result
+	return int64(result)
 }
 
 func getIngressService(c *client.Client)*api.Service {
@@ -455,7 +455,7 @@ func updateDNS(r53Api *route53.Route53, zoneID string, rrs route53.ResourceRecor
 	return nil
 }
 
-func makeATypeRecordSet(hn, hzID, domain string, ttl int) route53.ResourceRecordSet {
+func makeATypeRecordSet(hn, hzID, domain string, ttl int64) route53.ResourceRecordSet {
 	at := route53.AliasTarget{
 		DNSName:              &hn,
 		EvaluateTargetHealth: aws.Bool(false),
@@ -469,7 +469,7 @@ func makeATypeRecordSet(hn, hzID, domain string, ttl int) route53.ResourceRecord
 	}
 }
 
-func makeCNAMETypeRecordSet(hn, hzID, domain string, ttl int) route53.ResourceRecordSet {
+func makeCNAMETypeRecordSet(hn, hzID, domain string, ttl int64) route53.ResourceRecordSet {
 	return route53.ResourceRecordSet{
 		ResourceRecords: []*route53.ResourceRecord{
 			&route53.ResourceRecord{
