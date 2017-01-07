@@ -126,8 +126,8 @@ spec:
   type: LoadBalancer
 ```
 
-An "CNAME" record for `test.mydomain.com` will be created points to the ELB that is
-configured by kubernetes. This assumes that a hosted zone exists in Route53 for mydomain.com.
+A "CNAME" record for `test.mydomain.com` will be created which points to the ELB that is
+configured by kubernetes. This assumes that a hosted zone exists in Route53 for `mydomain.com`.
 Any record that previously existed for that dns record will be updated.
 
 ``dnsRecordType`` and ``dnsRecordTTL`` annotations are optional.
