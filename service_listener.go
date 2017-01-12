@@ -308,8 +308,13 @@ func getIngressService(c *client.Client)*api.Service {
 	}
 
 	services, err := c.Services(api.NamespaceAll).List(serviceListOptions)
-	if err != nil || len(services.Items) == 0 {
-		glog.Infof("Failed to list services that use ingress: %v", err)
+	if err != nil {
+		glog.Infof("Something goes wrong: %v", err)
+		return nil
+	}
+
+	if len(services.Items) == 0 {
+		glog.Infof("Ingress controller not installed or ingress service selector %v is not valid. SKIP", l)
 		return nil
 	}
 
