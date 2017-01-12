@@ -135,7 +135,7 @@ func main() {
 				continue
 			}
 
-			glog.Infof("Creating DNS for %s service: %s -> %s", s.service.Name, hn, domain)
+			glog.Infof("Creating DNS for %s service: %s -> %s", s.service.Name, domain, hn)
 			elbZoneID, err := hostedZoneID(elbAPI, hn)
 			if err != nil {
 				glog.Warningf("Couldn't get zone ID: %s", err)
@@ -233,14 +233,14 @@ func getIngressBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 	glog.Infof("Found %v DNS ingress in all namespaces", len(ingresses.Items))
 
 	for _, ingress := range ingresses.Items {
-		dnsRecordType, ok := service.ObjectMeta.Annotations["dnsRecordType"]
+		dnsRecordType, ok := ingress.ObjectMeta.Annotations["dnsRecordType"]
 		if !ok || !isDNSRecordTypeValid(dnsRecordType)  {
 			dnsRecordType = defaultDNSRecordType()
 		}
 
 		ttl := defaultDNSRecordTTL()
 
-		ttlString, ok := service.ObjectMeta.Annotations["dnsRecordTTL"]
+		ttlString, ok := ingress.ObjectMeta.Annotations["dnsRecordTTL"]
 		if ok && parseTTL(ttlString) != 0  {
 			ttl = parseTTL(ttlString)
 		}
@@ -449,6 +449,7 @@ func updateDNS(r53Api *route53.Route53, zoneID string, rrs route53.ResourceRecor
 	}
 
 	_, err := r53Api.ChangeResourceRecordSets(&crrsInput)
+	fmt.Printf("REQUEST: %v\n", &crrsInput)
 	if err != nil {
 		return fmt.Errorf("Failed to update record set: %v", err)
 	}
