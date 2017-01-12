@@ -454,7 +454,6 @@ func updateDNS(r53Api *route53.Route53, zoneID string, rrs route53.ResourceRecor
 	}
 
 	_, err := r53Api.ChangeResourceRecordSets(&crrsInput)
-	fmt.Printf("REQUEST: %v\n", &crrsInput)
 	if err != nil {
 		return fmt.Errorf("Failed to update record set: %v", err)
 	}
