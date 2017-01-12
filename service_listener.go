@@ -466,7 +466,6 @@ func makeATypeRecordSet(hn, hzID, domain string, ttl int64) route53.ResourceReco
 		AliasTarget: &at,
 		Name:        &domain,
 		Type:        aws.String("A"),
-		TTL:   	     aws.Int64(ttl),
 	}
 }
 
