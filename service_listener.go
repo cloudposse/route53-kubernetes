@@ -226,7 +226,7 @@ func getIngressBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 
 	ingresses, err := c.Ingress(api.NamespaceAll).List(listOptions)
 	if err != nil {
-		glog.Fatalf("Failed to list ingress: %v", err)
+		glog.Infof("Failed to list ingress: %v", err)
 		return result
 	}
 
@@ -309,7 +309,7 @@ func getIngressService(c *client.Client)*api.Service {
 
 	services, err := c.Services(api.NamespaceAll).List(serviceListOptions)
 	if err != nil || len(services.Items) == 0 {
-		glog.Fatalf("Failed to list services that use ingress: %v", err)
+		glog.Infof("Failed to list services that use ingress: %v", err)
 		return nil
 	}
 
