@@ -386,7 +386,7 @@ func domainWithTrailingDot(withoutDot string) string {
 
 func serviceHostname(service api.Service) (string, error) {
 	ingress := service.Status.LoadBalancer.Ingress
-	fmt.Printf("Service %v", service)
+	fmt.Errorf("Service %v", service)
 	if len(ingress) < 1 {
 		return "", errors.New("No ingress defined for ELB")
 	}
