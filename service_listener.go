@@ -28,12 +28,14 @@ import (
 var dryRun bool
 
 const (
+	// A - dns record type
 	A  = "A"
+	// CNAME - dns record type
 	CNAME = "CNAME"
 )
 
 type rule struct {
-	service       	*api.Service
+	service       	api.Service
 	dnsRecordType 	string
 	ttl 		int64
 }
@@ -207,7 +209,7 @@ func getServiceBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 		if ok {
 			domains := strings.Split(annotation, ",")
 			for _, domain := range domains {
-				result[domain] = rule { service: &service, dnsRecordType: dnsRecordType, ttl: ttl }
+				result[domain] = rule { service: service, dnsRecordType: dnsRecordType, ttl: ttl }
 			}
 		} else {
 			glog.Warningf("Domain name not set for %s", service.Name)
@@ -250,7 +252,7 @@ func getIngressBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 		if ok {
 			domains := strings.Split(annotation, ",")
 			for _, domain := range domains {
-				result[domain] = rule{ service: service, dnsRecordType: dnsRecordType, ttl: ttl }
+				result[domain] = rule{ service: *service, dnsRecordType: dnsRecordType, ttl: ttl }
 			}
 		} else {
 			glog.Warningf("Domain name not set for %s", ingress.Name)
@@ -382,8 +384,9 @@ func domainWithTrailingDot(withoutDot string) string {
 	return fmt.Sprint(withoutDot, ".")
 }
 
-func serviceHostname(service *api.Service) (string, error) {
+func serviceHostname(service api.Service) (string, error) {
 	ingress := service.Status.LoadBalancer.Ingress
+	fmt.Errorf("Service %v", service)
 	if len(ingress) < 1 {
 		return "", errors.New("No ingress defined for ELB")
 	}
