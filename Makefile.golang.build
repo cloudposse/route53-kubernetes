@@ -17,6 +17,7 @@ build-all: $(GO)
 ## Install dependencies
 deps: $(GLIDE)
 	$(GLIDE) install --strip-vendor --strip-vcs
+	$(GLIDE) update  --strip-vendor
 
 .PHONY: deps-build
 ## Install dependencies for build
