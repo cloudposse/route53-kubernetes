@@ -18,7 +18,6 @@ build-all: $(GO)
 deps: $(GLIDE)
 	$(GLIDE) install
 	$(GLIDE) update
-	$(GLIDE) update
 
 .PHONY: deps-build
 ## Install dependencies for build
