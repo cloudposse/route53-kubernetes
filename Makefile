@@ -1,22 +1,17 @@
-GLIDE	:= $(shell which glide)
-GO=CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go
-TAG=v1.3.0
-BIN=route53-kubernetes
-IMAGE=quay.io/molecule/$(BIN)
+include Makefile.*
 
-all: image
-	docker push $(IMAGE):$(TAG)
-
-build:
-	$(GO) build -installsuffix cgo -o $(BIN) .
-
-deps:
-	$(GLIDE) install --strip-vendor --strip-vcs
-
-image: build
-	docker build -t $(IMAGE):$(TAG) .
-
-.PHONY: clean
-
-clean:
-	rm $(BIN)
+## This help screen
+help:
+	@printf "Available targets:\n\n"
+	@awk '/^[a-zA-Z\-\_0-9%:\\]+:/ { \
+	  helpMessage = match(lastLine, /^## (.*)/); \
+	  if (helpMessage) { \
+	    helpCommand = $$1; \
+	    helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
+      gsub("\\\\", "", helpCommand); \
+      gsub(":+$$", "", helpCommand); \
+	    printf "  \x1b[32;01m%-35s\x1b[0m %s\n", helpCommand, helpMessage; \
+	  } \
+	} \
+	{ lastLine = $$0 }' $(MAKEFILE_LIST) | sort -u
+	@printf "\n"

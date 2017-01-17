@@ -29,15 +29,15 @@ var dryRun bool
 
 const (
 	// A - dns record type
-	A  = "A"
+	A = "A"
 	// CNAME - dns record type
 	CNAME = "CNAME"
 )
 
 type rule struct {
-	service       	api.Service
-	dnsRecordType 	string
-	ttl 		int64
+	service       api.Service
+	dnsRecordType string
+	ttl           int64
 }
 
 func init() {
@@ -152,18 +152,20 @@ func main() {
 
 			zoneID := *zone.Id
 			zoneParts := strings.Split(zoneID, "/")
-			zoneID = zoneParts[len(zoneParts) - 1]
+			zoneID = zoneParts[len(zoneParts)-1]
 
 			var rrs route53.ResourceRecordSet
 			switch s.dnsRecordType {
-			case A: rrs = makeATypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."), s.ttl)
-			case CNAME: rrs = makeCNAMETypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."), s.ttl)
+			case A:
+				rrs = makeATypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."), s.ttl)
+			case CNAME:
+				rrs = makeCNAMETypeRecordSet(hn, elbZoneID, strings.TrimLeft(domain, "."), s.ttl)
 			}
 
 			if err = updateDNS(r53Api, zoneID, rrs); err != nil {
 				glog.Warning(err)
 				continue
-			// If no error and it was dryRun then log info about this
+				// If no error and it was dryRun then log info about this
 			} else if dryRun {
 				glog.Infof("DRY RUN: We normally would have updated %s to point %s to %s (%s)", zoneID, domain, hn, elbZoneID)
 			}
@@ -193,23 +195,22 @@ func getServiceBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 	glog.Infof("Found %v DNS services in all namespaces with selector", len(services.Items))
 	for _, service := range services.Items {
 		dnsRecordType, ok := service.ObjectMeta.Annotations["dnsRecordType"]
-		if !ok || !isDNSRecordTypeValid(dnsRecordType)  {
+		if !ok || !isDNSRecordTypeValid(dnsRecordType) {
 			dnsRecordType = defaultDNSRecordType()
 		}
 
 		ttl := defaultDNSRecordTTL()
 
 		ttlString, ok := service.ObjectMeta.Annotations["dnsRecordTTL"]
-		if ok && parseTTL(ttlString) != 0  {
+		if ok && parseTTL(ttlString) != 0 {
 			ttl = parseTTL(ttlString)
 		}
-
 
 		annotation, ok := service.ObjectMeta.Annotations["domainName"]
 		if ok {
 			domains := strings.Split(annotation, ",")
 			for _, domain := range domains {
-				result[domain] = rule { service: service, dnsRecordType: dnsRecordType, ttl: ttl }
+				result[domain] = rule{service: service, dnsRecordType: dnsRecordType, ttl: ttl}
 			}
 		} else {
 			glog.Warningf("Domain name not set for %s", service.Name)
@@ -236,14 +237,14 @@ func getIngressBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 
 	for _, ingress := range ingresses.Items {
 		dnsRecordType, ok := ingress.ObjectMeta.Annotations["dnsRecordType"]
-		if !ok || !isDNSRecordTypeValid(dnsRecordType)  {
+		if !ok || !isDNSRecordTypeValid(dnsRecordType) {
 			dnsRecordType = defaultDNSRecordType()
 		}
 
 		ttl := defaultDNSRecordTTL()
 
 		ttlString, ok := ingress.ObjectMeta.Annotations["dnsRecordTTL"]
-		if ok && parseTTL(ttlString) != 0  {
+		if ok && parseTTL(ttlString) != 0 {
 			ttl = parseTTL(ttlString)
 		}
 
@@ -252,7 +253,7 @@ func getIngressBasedDomainServiceMap(result map[string]rule, c *client.Client, l
 		if ok {
 			domains := strings.Split(annotation, ",")
 			for _, domain := range domains {
-				result[domain] = rule{ service: *service, dnsRecordType: dnsRecordType, ttl: ttl }
+				result[domain] = rule{service: *service, dnsRecordType: dnsRecordType, ttl: ttl}
 			}
 		} else {
 			glog.Warningf("Domain name not set for %s", ingress.Name)
@@ -271,7 +272,7 @@ func defaultDNSRecordType() string {
 
 func defaultDNSRecordTTL() int64 {
 	ttl := parseTTL(os.Getenv("DNS_RECORD_TTL"))
-	if ttl == 0  {
+	if ttl == 0 {
 		ttl = 300
 	}
 	return ttl
@@ -280,7 +281,6 @@ func defaultDNSRecordTTL() int64 {
 func isDNSRecordTypeValid(dnsRecordType string) bool {
 	return dnsRecordType == A || dnsRecordType == CNAME
 }
-
 
 func parseTTL(ttl string) int64 {
 	result, err := strconv.Atoi(ttl)
@@ -292,7 +292,7 @@ func parseTTL(ttl string) int64 {
 	return int64(result)
 }
 
-func getIngressService(c *client.Client)*api.Service {
+func getIngressService(c *client.Client) *api.Service {
 	selector := os.Getenv("INGRESS_SERVICE_SELECTOR")
 	if selector == "" {
 		selector = "ingress=endpoint"
@@ -374,11 +374,11 @@ func getTLD(domain string) (string, error) {
 	if segments < 3 {
 		return "", fmt.Errorf("Domain %s is invalid - it should be a fully qualified domain name and subdomain (i.e. test.example.com)", domain)
 	}
-	return strings.Join(domainParts[segments - 2:], "."), nil
+	return strings.Join(domainParts[segments-2:], "."), nil
 }
 
 func domainWithTrailingDot(withoutDot string) string {
-	if withoutDot[len(withoutDot) - 1:] == "." {
+	if withoutDot[len(withoutDot)-1:] == "." {
 		return withoutDot
 	}
 	return fmt.Sprint(withoutDot, ".")
@@ -386,7 +386,7 @@ func domainWithTrailingDot(withoutDot string) string {
 
 func serviceHostname(service api.Service) (string, error) {
 	ingress := service.Status.LoadBalancer.Ingress
-	fmt.Errorf("Service %v", service)
+
 	if len(ingress) < 1 {
 		return "", errors.New("No ingress defined for ELB")
 	}
@@ -479,12 +479,12 @@ func makeATypeRecordSet(hn, hzID, domain string, ttl int64) route53.ResourceReco
 func makeCNAMETypeRecordSet(hn, hzID, domain string, ttl int64) route53.ResourceRecordSet {
 	return route53.ResourceRecordSet{
 		ResourceRecords: []*route53.ResourceRecord{
-			&route53.ResourceRecord{
+			{
 				Value: &hn,
 			},
 		},
-		Name:  &domain,
-		Type:  aws.String("CNAME"),
-		TTL:   aws.Int64(ttl),
+		Name: &domain,
+		Type: aws.String("CNAME"),
+		TTL:  aws.Int64(ttl),
 	}
 }
