@@ -15,7 +15,7 @@ build-all: $(GO)
 
 .PHONY: deps
 ## Install dependencies
-deps: $(GLIDE) deps-build
+deps: $(GLIDE)
 	$(GLIDE) install
 	$(GLIDE) update
 
@@ -24,7 +24,6 @@ deps: $(GLIDE) deps-build
 deps-build:
 	mkdir -p  $(GOPATH)/bin
 	which $(GLIDE) || (curl https://glide.sh/get | sh)
-	$(eval GLIDE=$(shell which glide))
 
 .PHONY: deps-dev
 ## Install development dependencies

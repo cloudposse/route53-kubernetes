@@ -16,6 +16,7 @@ services:
 - docker
 
 install:
+- make deps-build
 - make deps-dev
 - |-
   docker login \
