@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 export BUILD_HARNESS_PATH ?= $(shell until [ -d "build-harness" ] || [ "`pwd`" == '/' ]; do cd ..; done; pwd)/build-harness
-include $(BUILD_HARNESS_PATH)/Makefile
+-include $(BUILD_HARNESS_PATH)/Makefile
 
 APP?=route53-kubernetes
 
