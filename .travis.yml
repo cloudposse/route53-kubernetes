@@ -16,24 +16,17 @@ services:
 - docker
 
 install:
-- make deps-build
-- make deps-dev
-- |-
-  docker login \
-    --email="$DOCKER_HUB_EMAIL" \
-    --username="$DOCKER_HUB_USERNAME" \
-    --password="$DOCKER_HUB_PASSWORD"
-
-- |-
-  curl https://raw.githubusercontent.com/cloudposse/build-harness/master/scripts/travis_docker_tag.sh > travis_docker_tag.sh \
-  && chmod +x travis_docker_tag.sh
+- make init
+- make go:deps-build
+- make go:deps-dev
+- make docker:login
 
 script:
-- make deps
-- make test
-- make lint
-- make build
-- docker build -t $DOCKER_IMAGE_NAME .
+- make go:deps
+- make go:test
+- make go:lint
+- make go:build
+- make docker:build
 
 after_success:
-- ./travis_docker_tag.sh
+- make travis:docker-tag-and-push

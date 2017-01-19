@@ -34,3 +34,5 @@ glide.lock
 vendor/
 
 release/
+
+build-harness/
