@@ -7,8 +7,7 @@ APP?=route53-kubernetes
 .PHONY : init
 ## Init build-harness
 init:
-	@echo "BUMP"
-#	@curl --retry 5 --retry-delay 1 https://raw.githubusercontent.com/cloudposse/build-harness/master/bin/install.sh | bash
+	@curl --retry 5 --retry-delay 1 https://raw.githubusercontent.com/cloudposse/build-harness/master/bin/install.sh | bash
 
 
 
