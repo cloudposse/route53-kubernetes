@@ -1,22 +1,15 @@
-GLIDE	:= $(shell which glide)
-GO=CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go
-TAG=v1.3.0
-BIN=route53-kubernetes
-IMAGE=quay.io/molecule/$(BIN)
+SHELL = /bin/bash
+export BUILD_HARNESS_PATH ?= $(shell until [ -d "build-harness" ] || [ "`pwd`" == '/' ]; do cd ..; done; pwd)/build-harness
+-include $(BUILD_HARNESS_PATH)/Makefile
 
-all: image
-	docker push $(IMAGE):$(TAG)
+override APP:=route53-kubernetes
 
-build:
-	$(GO) build -installsuffix cgo -o $(BIN) .
+.PHONY : init
+## Init build-harness
+init:
+	@curl --retry 5 --retry-delay 1 https://raw.githubusercontent.com/cloudposse/build-harness/master/bin/install.sh | bash
 
-deps:
-	$(GLIDE) install --strip-vendor --strip-vcs
-
-image: build
-	docker build -t $(IMAGE):$(TAG) .
-
-.PHONY: clean
-
+.PHONY : clean
+## Clean build-harness
 clean:
-	rm $(BIN)
+	@rm -rf $(BUILD_HARNESS_PATH)
