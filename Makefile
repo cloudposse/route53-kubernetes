@@ -3,6 +3,8 @@ export BUILD_HARNESS_PATH ?= $(shell until [ -d "build-harness" ] || [ "`pwd`" =
 -include $(BUILD_HARNESS_PATH)/Makefile
 
 APP:=route53-kubernetes
+COPYRIGHT_SOFTWARE:=Route53-Kubernetes mapping
+COPYRIGHT_SOFTWARE_DESCRIPTION:=This is a Kubernetes service that polls services and ingresses and adds the appropriate alias to the specified domain. 
 
 .PHONY : init
 ## Init build-harness
