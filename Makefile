@@ -2,7 +2,7 @@ SHELL = /bin/bash
 export BUILD_HARNESS_PATH ?= $(shell until [ -d "build-harness" ] || [ "`pwd`" == '/' ]; do cd ..; done; pwd)/build-harness
 -include $(BUILD_HARNESS_PATH)/Makefile
 
-override APP:=route53-kubernetes
+APP:=route53-kubernetes
 
 .PHONY : init
 ## Init build-harness
