@@ -10,23 +10,20 @@ addons:
     - curl
 
 env:
-  - DOCKER_IMAGE_NAME=cloudposse/route53-kubernetes
+  global:
+    - DOCKER_IMAGE_NAME=cloudposse/route53-kubernetes
+    - RUN_TESTS=1
 
 services:
 - docker
 
 install:
 - make init
-- make go:deps-build
-- make go:deps-dev
 - make docker:login
 
 script:
-- make go:deps
-- make go:test
-- make go:lint
-- make go:build
-- make docker:build
+- make docker:build ARGS="RUN_TESTS"
 
 after_success:
+- make docker:build
 - make travis:docker-tag-and-push
